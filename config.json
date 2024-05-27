@@ -1,0 +1,12 @@
+{
+    "server": {
+        "port": 8080,
+        "proxy": "localhost:8000"
+    },
+    "entities": [
+        {
+            "name": "test",
+            "key": "qwertyuiopasdfghjklzxcvbnm123456"
+        }
+    ]
+}
