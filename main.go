@@ -24,5 +24,6 @@ func main() {
 	log.Info().Msgf("Configuration loaded: %v", cfg)
 
 	router := server.NewRouter(&cfg)
+
 	router.Start()
 }
