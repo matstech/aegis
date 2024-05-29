@@ -27,8 +27,13 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 	if authHeaders != "" {
 		hs := strings.Split(authHeaders, ";")
 
-		for _, h := range hs {
-			tbv += fmt.Sprintf("%s;", headers.Get(h))
+		for i, h := range hs {
+			if i == len(hs)-1 {
+				tbv += headers.Get(h)
+
+			} else {
+				tbv += fmt.Sprintf("%s;", headers.Get(h))
+			}
 		}
 	}
 
