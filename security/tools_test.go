@@ -8,18 +8,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var signature = "Wk1IAqhmQ1GdldktdCqSPNZsxOyqkymW7fSsE6Hh+By0cFenmfrtrKpKkokeeg9DmUBn82/DNtYJgk30GbiY8w=="
-var signatureNoBody = "5MJsr0lacO+Kk5UQ32JSHtjfgA6UyG9l6nscRpoHJ2H+43fRdZ8wkQJ4zp4i/f70pBHLfaDs81rFP4k4lZPd5g=="
+var signature = "6w0jio7c3F35jFBhZmk+rhKJTl6DEMLkyrXJlGMciReYqOmZB0furxlZC8++fO8dFsdMvNq7Ngmane9xiSJkzQ=="
+var signatureNoBody = "3YeNZUvn0HcoNrnzWRpLzvLjr07025Qy+KGYe2KB83xPKi6RLW+B0A0+eo0aLMBlQOIZwp3o0Nd8NAxxXrGVrg=="
 var authKid = "c0y44e8LL4"
 var authHeaders = "header1;header2"
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
 
 var headersMap = map[string]string{
-	"Signature":    signature,
-	"Auth-Kid":     authKid,
-	"Auth-Headers": authHeaders,
-	"header1":      "header1",
-	"header2":      "header2",
+	"Signature":          signature,
+	"Auth-Kid":           authKid,
+	"Auth-Headers":       authHeaders,
+	"header1":            "header1",
+	"header2":            "header2",
+	"Auth-CorrelationId": "1fkEphx2qq",
 }
 
 var entities = []configuration.Entity{

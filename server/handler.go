@@ -22,7 +22,7 @@ func PostHandler(ctx *gin.Context, entities []configuration.Entity, proxyHost st
 	vs := security.VerifySignature(signature, authKid, authHeaders, body, ctx.Request.Header, entities)
 
 	if !vs {
-		ctx.AbortWithError(http.StatusUnauthorized, errors.New("signature cannot be verified"))
+		ctx.AbortWithError(http.StatusUnauthorized, errors.New("signature not valid"))
 		return
 	}
 
@@ -52,24 +52,24 @@ func checkHeaders(ctx *gin.Context) (string, string, string) {
 		ctx.AbortWithError(http.StatusBadRequest, errors.New("no headers found"))
 	}
 
+	authCorrelationId := headers.Get("Auth-CorrelationId")
+
+	if authCorrelationId == "" {
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("missing Auth-CorrelationId"))
+	}
+
 	authKid := headers.Get("Auth-Kid")
 
 	if authKid == "" {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("no auth kid"))
-	}
-
-	authHeaders := headers.Get("Auth-Headers")
-
-	if authHeaders == "" {
-		log.Info().Msgf("no auth headers specified")
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("missing Auth-Kid"))
 	}
 
 	signature := headers.Get("Signature")
 
 	if signature == "" {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("no signature in header found"))
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("missing Signature"))
 
 	}
 
-	return authKid, authHeaders, signature
+	return authKid, headers.Get("Auth-Headers"), signature
 }

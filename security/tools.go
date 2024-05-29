@@ -22,7 +22,8 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 	h := hmac.New(sha512.New, []byte(secret))
 
-	tbv := ""
+	tbv := fmt.Sprintf("%s;", headers.Get("Auth-CorrelationId"))
+
 	if authHeaders != "" {
 		hs := strings.Split(authHeaders, ";")
 
