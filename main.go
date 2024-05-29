@@ -14,7 +14,7 @@ func main() {
 	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
 		EnvPrefix:  "APP",
 		FlagPrefix: "app",
-		Files:      []string{"/home/mat/workspace/personal/go-token-guard/config.json"},
+		Files:      []string{"/home/mat/workspace/personal/go-token-guard/config.json"}, //tODO
 	})
 
 	if err := loader.Load(); err != nil {
