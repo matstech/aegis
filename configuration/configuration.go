@@ -1,6 +1,8 @@
 package configuration
 
 type MainConfiguration struct {
+	Ginmode  string `default:"debug"`
+	Loglevel string
 	Server   Server `required:"true"`
 	Entities []Entity
 }

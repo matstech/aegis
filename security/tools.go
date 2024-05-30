@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"tokenguard/configuration"
+	"tokenguard/constants"
 
 	"github.com/shivakar/xxhash"
 )
@@ -22,7 +23,7 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 	h := hmac.New(sha512.New, []byte(secret))
 
-	tbv := fmt.Sprintf("%s;", headers.Get("Auth-CorrelationId"))
+	tbv := fmt.Sprintf("%s;", headers.Get(constants.AUTH_CORRELATIONID))
 
 	if authHeaders != "" {
 		hs := strings.Split(authHeaders, ";")

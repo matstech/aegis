@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var signature = "6w0jio7c3F35jFBhZmk+rhKJTl6DEMLkyrXJlGMciReYqOmZB0furxlZC8++fO8dFsdMvNq7Ngmane9xiSJkzQ=="
-var signatureNoBody = "3YeNZUvn0HcoNrnzWRpLzvLjr07025Qy+KGYe2KB83xPKi6RLW+B0A0+eo0aLMBlQOIZwp3o0Nd8NAxxXrGVrg=="
+var signature = "XciMlTpNQSefPAjCbHzHU6fF3YorGGOMyP8qMuYKCOc3Z1MD5iSb9dgUyvg6arCRd/Bz4/EfJRO00HXLZLX1Dw=="
+var signatureNoBody = "r2ncXWTsILhGhaDByZUFRrUPxT3nz1pw9qeXd2TdRizH75qq6m5UFoDa31CapZIp2TyTKTs3v6TqZr+8qYdHGQ=="
 var authKid = "c0y44e8LL4"
 var authHeaders = "header1;header2"
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
@@ -30,7 +30,6 @@ var entities = []configuration.Entity{
 	},
 }
 
-// func VerifySignature(signature, authKid, authHeaders string, payload []byte, headers http.Header, entities []configuration.Entity) bool {
 func TestVerifySignatureOk(t *testing.T) {
 	headers := createHttpHeader(headersMap)
 

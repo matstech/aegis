@@ -1,4 +1,6 @@
 {
+    "ginmode": "debug",
+    "loglevel": "debug",
     "server": {
         "port": 8080,
         "proxy": "localhost:8000"

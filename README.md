@@ -35,3 +35,17 @@ For example: header<sub>1</sub>;....;header<sub>1</sub>
 ## Configuration
 
 ## How to run
+
+## Exit code
+
+## Exit Code 1
+
+- **Descrizione**: configurazioni sbagliate.
+- **Causa**: Il programma è terminato correttamente senza errori.
+- **Soluzione**: Nessuna azione necessaria.
+
+## Exit Code 2
+
+- **Descrizione**: errore nello start del server
+- **Causa**: Il programma è terminato correttamente senza errori.
+- **Soluzione**: Nessuna azione necessaria.
