@@ -1,4 +1,4 @@
-package constants
+package configuration
 
 const (
 	AUTH_KID           string = "Auth-Kid"

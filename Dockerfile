@@ -23,7 +23,7 @@ COPY version.go ./version.go
 # COPY config.json ./config.json
 
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags musl \
+RUN CGO_ENABLED=0 go build -tags musl \
     -ldflags "-extldflags -static -X main.BUILDDATE=`date +%Y-%m-%dT%T%z`" \
     -v -o /go/bin/aegis main.go
 
