@@ -1,9 +1,11 @@
 package security
 
 import (
+	"aegis/constants"
 	"net/http"
+	"os"
+	"strings"
 	"testing"
-	"tokenguard/configuration"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -15,20 +17,15 @@ var authHeaders = "header1;header2"
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
 
 var headersMap = map[string]string{
-	"Signature":          signature,
-	"Auth-Kid":           authKid,
-	"Auth-Headers":       authHeaders,
-	"header1":            "header1",
-	"header2":            "header2",
-	"Auth-CorrelationId": "1fkEphx2qq",
+	constants.SIGNATURE:          signature,
+	constants.AUTH_KID:           authKid,
+	constants.AUTH_HEADERS:       authHeaders,
+	"header1":                    "header1",
+	"header2":                    "header2",
+	constants.AUTH_CORRELATIONID: "1fkEphx2qq",
 }
 
-var entities = []configuration.Entity{
-	{
-		Name: "c0y44e8LL4",
-		Key:  "QTEiL2Jy92",
-	},
-}
+var entities = []string{authKid}
 
 func TestVerifySignatureOk(t *testing.T) {
 	headers := createHttpHeader(headersMap)
@@ -72,6 +69,7 @@ func TestVerifySignatureNoBody(t *testing.T) {
 
 // Test function tools
 func createHttpHeader(hs map[string]string) http.Header {
+	setAccessKeyEnv()
 	h := http.Header{}
 
 	for hName, hValue := range hs {
@@ -79,4 +77,8 @@ func createHttpHeader(hs map[string]string) http.Header {
 	}
 
 	return h
+}
+
+func setAccessKeyEnv() {
+	os.Setenv("ACCESSKEY_"+strings.ToUpper(authKid), "QTEiL2Jy92")
 }

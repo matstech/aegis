@@ -1,13 +1,13 @@
 package server
 
 import (
+	"aegis/constants"
+	"aegis/security"
 	"bytes"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"tokenguard/constants"
-	"tokenguard/security"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,7 @@ func (r *Router) Handler(ctx *gin.Context) {
 		body, _ = io.ReadAll(ctx.Request.Body)
 	}
 
-	vs := security.VerifySignature(signature, authKid, authHeaders, body, ctx.Request.Header, r.conf.Entities)
+	vs := security.VerifySignature(signature, authKid, authHeaders, body, ctx.Request.Header, r.conf.Kids)
 
 	if !vs {
 		InvalidSignature(ctx)
@@ -38,7 +38,7 @@ func (r *Router) Handler(ctx *gin.Context) {
 		req.Header = ctx.Request.Header
 		req.Host = ctx.Request.Host
 		req.URL.Scheme = constants.PROTOCOL_SCHEME
-		req.URL.Host = r.conf.Server.Proxy
+		req.URL.Host = r.conf.Server.Upstream
 		req.URL.Path = ctx.Request.URL.Path
 
 		if len(body) > 0 {

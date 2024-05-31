@@ -25,7 +25,7 @@ COPY version.go ./version.go
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags musl \
     -ldflags "-extldflags -static -X main.BUILDDATE=`date +%Y-%m-%dT%T%z`" \
-    -v -o /go/bin/go-token-guard main.go
+    -v -o /go/bin/aegis main.go
 
 FROM scratch
 WORKDIR /app
@@ -33,8 +33,8 @@ WORKDIR /app
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-COPY --from=builder /go/bin/go-token-guard /app/go-token-guard
+COPY --from=builder /go/bin/aegis /app/aegis
 
 USER usr:usr
 
-ENTRYPOINT ["/app/go-token-guard"]
+ENTRYPOINT ["/app/aegis"]

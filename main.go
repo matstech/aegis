@@ -1,9 +1,9 @@
 package main
 
 import (
+	"aegis/configuration"
+	"aegis/server"
 	"os"
-	"tokenguard/configuration"
-	"tokenguard/server"
 
 	"github.com/cristalhq/aconfig"
 	"github.com/rs/zerolog"

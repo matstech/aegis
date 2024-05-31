@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"aegis/configuration"
 	"net/http"
 	"os"
-	"tokenguard/configuration"
 
 	"github.com/rs/zerolog/log"
 
@@ -21,8 +21,6 @@ import (
 type Router struct {
 	conf   *configuration.MainConfiguration
 	server *gin.Engine
-	// shutdownChannel chan os.Signal
-	// ready           bool
 }
 
 func NewRouter(cfg *configuration.MainConfiguration) *Router {
@@ -64,7 +62,7 @@ func (r *Router) Start() error {
 			}
 
 			if r.conf.Server.Mode == "MTLS" {
-				certPool, certPoolErr := buildCertPool(r.conf.Server.Mtls.Cacert)
+				certPool, certPoolErr := buildCertPool(r.conf.Server.Tls.Cacert)
 
 				if certPoolErr != nil {
 					log.Fatal().Msgf("error loading certpool: %s", certPoolErr.Error())
@@ -76,8 +74,8 @@ func (r *Router) Start() error {
 			}
 
 			if err := srv.ListenAndServeTLS(
-				r.conf.Server.Mtls.Certpath,
-				r.conf.Server.Mtls.Keypath); err != nil && err != http.ErrServerClosed {
+				r.conf.Server.Tls.Certpath,
+				r.conf.Server.Tls.Keypath); err != nil && err != http.ErrServerClosed {
 				log.Fatal().Msgf("error starting server: %s", err.Error())
 				os.Exit(2)
 			}

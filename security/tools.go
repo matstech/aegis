@@ -1,19 +1,19 @@
 package security
 
 import (
+	"aegis/constants"
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
-	"tokenguard/configuration"
-	"tokenguard/constants"
 
 	"github.com/shivakar/xxhash"
 )
 
-func VerifySignature(signature, authKid, authHeaders string, payload []byte, headers http.Header, entities []configuration.Entity) bool {
+func VerifySignature(signature, authKid, authHeaders string, payload []byte, headers http.Header, entities []string) bool {
 
 	secret := getKidSecret(authKid, entities)
 
@@ -23,18 +23,13 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 	h := hmac.New(sha512.New, []byte(secret))
 
-	tbv := fmt.Sprintf("%s;", headers.Get(constants.AUTH_CORRELATIONID))
+	tbv := headers.Get(constants.AUTH_CORRELATIONID)
 
 	if authHeaders != "" {
 		hs := strings.Split(authHeaders, ";")
 
-		for i, h := range hs {
-			if i == len(hs)-1 {
-				tbv += headers.Get(h)
-
-			} else {
-				tbv += fmt.Sprintf("%s;", headers.Get(h))
-			}
+		for _, h := range hs {
+			tbv += fmt.Sprintf(";%s", headers.Get(h))
 		}
 	}
 
@@ -54,10 +49,10 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 }
 
-func getKidSecret(kid string, entities []configuration.Entity) string {
+func getKidSecret(kid string, entities []string) string {
 	for _, k := range entities {
-		if k.Name == kid {
-			return k.Key
+		if k == kid {
+			return os.Getenv(fmt.Sprintf("ACCESSKEY_%s", strings.ToUpper(kid)))
 		}
 	}
 	return ""

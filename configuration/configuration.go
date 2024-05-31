@@ -3,24 +3,19 @@ package configuration
 import "time"
 
 type MainConfiguration struct {
-	Ginmode  string `default:"debug"`
+	Ginmode  string `default:"debug" usage:"release in production"`
 	Loglevel string
 	Server   Server `required:"true"`
-	Entities []Entity
+	Kids     []string
 }
 
 type Server struct {
-	Mode string `default:"PLAIN"` //TODO: possible values
-	Mtls struct {
+	Mode string `default:"PLAIN" usage:"PLAIN,TLS,MTLS"`
+	Tls  struct {
 		Certpath, Keypath, Cacert string
 	}
 	Port                  int `default:"8080"`
-	Proxy                 string
+	Upstream              string
 	Timeout               time.Duration `default:"0"`
 	IdleConnectionTimeout time.Duration `default:"0"`
-}
-
-type Entity struct {
-	Name string
-	Key  string
 }

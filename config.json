@@ -3,18 +3,15 @@
     "loglevel": "debug",
     "server": {
         "mode": "PLAIN",
-        "mtls": {
+        "tls": {
             "certpath": "test/server.crt",
             "keypath": "test/server.key",
             "cacert": "test/cacert.pem"
         },
         "port": 8080,
-        "proxy": "httpbin.org"
+        "upstream": "httpbin.org"
     },
-    "entities": [
-        {
-            "name": "test",
-            "key": "qwertyuiopasdfghjklzxcvbnm123456"
-        }
+    "kids": [
+        "test"
     ]
 }

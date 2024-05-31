@@ -1,36 +1,32 @@
 package server
 
 import (
+	"aegis/configuration"
+	"aegis/constants"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
-	"tokenguard/configuration"
-	"tokenguard/constants"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
-
+var authKid = "c0y44e8LL4"
 var headersMap = map[string]string{
 	constants.SIGNATURE:          "XciMlTpNQSefPAjCbHzHU6fF3YorGGOMyP8qMuYKCOc3Z1MD5iSb9dgUyvg6arCRd/Bz4/EfJRO00HXLZLX1Dw==",
-	constants.AUTH_KID:           "c0y44e8LL4",
+	constants.AUTH_KID:           authKid,
 	constants.AUTH_HEADERS:       "header1;header2",
 	"header1":                    "header1",
 	"header2":                    "header2",
 	constants.AUTH_CORRELATIONID: "1fkEphx2qq",
 }
 
-var entities = []configuration.Entity{
-	{
-		Name: "c0y44e8LL4",
-		Key:  "QTEiL2Jy92",
-	},
-}
+var kids = []string{"c0y44e8LL4"}
 
 func TestHandlerOk(t *testing.T) {
 
@@ -39,9 +35,9 @@ func TestHandlerOk(t *testing.T) {
 	defer server.Close()
 
 	router := NewRouter(&configuration.MainConfiguration{
-		Entities: entities,
+		Kids: kids,
 		Server: configuration.Server{
-			Proxy: hostAndPort(serverUrl),
+			Upstream: hostAndPort(serverUrl),
 		}})
 
 	ctx := buildGinContext(serverUrl)
@@ -64,9 +60,9 @@ func TestHandlerKoSignature(t *testing.T) {
 	defer server.Close()
 
 	router := NewRouter(&configuration.MainConfiguration{
-		Entities: entities,
+		Kids: kids,
 		Server: configuration.Server{
-			Proxy: hostAndPort(serverUrl),
+			Upstream: hostAndPort(serverUrl),
 		}})
 
 	ctx := buildGinContext(serverUrl)
@@ -92,9 +88,9 @@ func TestHandlerKoFromServer(t *testing.T) {
 	defer server.Close()
 
 	router := NewRouter(&configuration.MainConfiguration{
-		Entities: entities,
+		Kids: kids,
 		Server: configuration.Server{
-			Proxy: hostAndPort(serverUrl),
+			Upstream: hostAndPort(serverUrl),
 		}})
 
 	ctx := buildGinContext(serverUrl)
@@ -119,9 +115,9 @@ func TestHandlerNoHeaders(t *testing.T) {
 	ctx := buildGinContext(serverUrl)
 
 	router := NewRouter(&configuration.MainConfiguration{
-		Entities: entities,
+		Kids: kids,
 		Server: configuration.Server{
-			Proxy: hostAndPort(serverUrl),
+			Upstream: hostAndPort(serverUrl),
 		}})
 	router.Handler(ctx)
 
@@ -150,6 +146,7 @@ func buildGinContext(testHost string) *gin.Context {
 }
 
 func mockProxyServer(error bool) (string, *httptest.Server) {
+	setAccessKeyEnv()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//no action required
 		if error {
@@ -188,4 +185,8 @@ func CreateTestResponseRecorder(testHost string) *TestResponseRecorder {
 		recorder,
 		make(chan bool, 1),
 	}
+}
+
+func setAccessKeyEnv() {
+	os.Setenv("ACCESSKEY_"+strings.ToUpper(authKid), "QTEiL2Jy92")
 }
