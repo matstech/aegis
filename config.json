@@ -1,0 +1,17 @@
+{
+    "ginmode": "debug",
+    "loglevel": "debug",
+    "server": {
+        "mode": "PLAIN",
+        "tls": {
+            "certpath": "test/server.crt",
+            "keypath": "test/server.key",
+            "cacert": "test/cacert.pem"
+        },
+        "port": 8080,
+        "upstream": "httpbin.org"
+    },
+    "kids": [
+        "test"
+    ]
+}
