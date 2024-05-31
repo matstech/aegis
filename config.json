@@ -2,8 +2,14 @@
     "ginmode": "debug",
     "loglevel": "debug",
     "server": {
+        "mode": "PLAIN",
+        "mtls": {
+            "certpath": "test/server.crt",
+            "keypath": "test/server.key",
+            "cacert": "test/cacert.pem"
+        },
         "port": 8080,
-        "proxy": "localhost:8000"
+        "proxy": "httpbin.org"
     },
     "entities": [
         {

@@ -1,5 +1,7 @@
 package configuration
 
+import "time"
+
 type MainConfiguration struct {
 	Ginmode  string `default:"debug"`
 	Loglevel string
@@ -8,8 +10,14 @@ type MainConfiguration struct {
 }
 
 type Server struct {
-	Port  int `default:"8080"`
-	Proxy string
+	Mode string `default:"PLAIN"` //TODO: possible values
+	Mtls struct {
+		Certpath, Keypath, Cacert string
+	}
+	Port                  int `default:"8080"`
+	Proxy                 string
+	Timeout               time.Duration `default:"0"`
+	IdleConnectionTimeout time.Duration `default:"0"`
 }
 
 type Entity struct {

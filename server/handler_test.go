@@ -33,9 +33,16 @@ var entities = []configuration.Entity{
 }
 
 func TestHandlerOk(t *testing.T) {
+
 	serverUrl, server := mockProxyServer(false)
 
 	defer server.Close()
+
+	router := NewRouter(&configuration.MainConfiguration{
+		Entities: entities,
+		Server: configuration.Server{
+			Proxy: hostAndPort(serverUrl),
+		}})
 
 	ctx := buildGinContext(serverUrl)
 
@@ -45,7 +52,7 @@ func TestHandlerOk(t *testing.T) {
 
 	ctx.Request.Body = io.NopCloser(strings.NewReader(string(payload)))
 
-	Handler(ctx, entities, ctx.Request.URL.Host)
+	router.Handler(ctx)
 
 	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
 
@@ -55,6 +62,12 @@ func TestHandlerKoSignature(t *testing.T) {
 	serverUrl, server := mockProxyServer(true)
 
 	defer server.Close()
+
+	router := NewRouter(&configuration.MainConfiguration{
+		Entities: entities,
+		Server: configuration.Server{
+			Proxy: hostAndPort(serverUrl),
+		}})
 
 	ctx := buildGinContext(serverUrl)
 
@@ -68,7 +81,7 @@ func TestHandlerKoSignature(t *testing.T) {
 
 	ctx.Request.Body = io.NopCloser(strings.NewReader(string(payload)))
 
-	Handler(ctx, entities, ctx.Request.URL.Host)
+	router.Handler(ctx)
 
 	assert.Equal(t, http.StatusBadRequest, ctx.Writer.Status())
 }
@@ -78,6 +91,12 @@ func TestHandlerKoFromServer(t *testing.T) {
 
 	defer server.Close()
 
+	router := NewRouter(&configuration.MainConfiguration{
+		Entities: entities,
+		Server: configuration.Server{
+			Proxy: hostAndPort(serverUrl),
+		}})
+
 	ctx := buildGinContext(serverUrl)
 
 	for hName, hValue := range headersMap {
@@ -86,20 +105,25 @@ func TestHandlerKoFromServer(t *testing.T) {
 
 	ctx.Request.Body = io.NopCloser(strings.NewReader(string(payload)))
 
-	Handler(ctx, entities, ctx.Request.URL.Host)
+	router.Handler(ctx)
 
 	assert.Equal(t, http.StatusFailedDependency, ctx.Writer.Status())
 }
 
 func TestHandlerNoHeaders(t *testing.T) {
 
-	testHost, server := mockProxyServer(false)
+	serverUrl, server := mockProxyServer(false)
 
 	defer server.Close()
 
-	ctx := buildGinContext(testHost)
+	ctx := buildGinContext(serverUrl)
 
-	Handler(ctx, entities, ctx.Request.URL.Host)
+	router := NewRouter(&configuration.MainConfiguration{
+		Entities: entities,
+		Server: configuration.Server{
+			Proxy: hostAndPort(serverUrl),
+		}})
+	router.Handler(ctx)
 
 	assert.Equal(t, http.StatusBadRequest, ctx.Writer.Status())
 }
@@ -141,6 +165,10 @@ func mockProxyServer(error bool) (string, *httptest.Server) {
 	}))
 
 	return server.URL, server
+}
+
+func hostAndPort(url string) string {
+	return strings.Split(url, "http://")[1]
 }
 
 type TestResponseRecorder struct {

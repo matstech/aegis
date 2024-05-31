@@ -1,17 +1,18 @@
 package server
 
 import (
+	"bytes"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httputil"
-	"tokenguard/configuration"
 	"tokenguard/constants"
 	"tokenguard/security"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Handler(ctx *gin.Context, entities []configuration.Entity, proxyHost string) {
+func (r *Router) Handler(ctx *gin.Context) {
 
 	authKid, authHeaders, signature := checkHeaders(ctx)
 
@@ -21,7 +22,7 @@ func Handler(ctx *gin.Context, entities []configuration.Entity, proxyHost string
 		body, _ = io.ReadAll(ctx.Request.Body)
 	}
 
-	vs := security.VerifySignature(signature, authKid, authHeaders, body, ctx.Request.Header, entities)
+	vs := security.VerifySignature(signature, authKid, authHeaders, body, ctx.Request.Header, r.conf.Entities)
 
 	if !vs {
 		InvalidSignature(ctx)
@@ -37,12 +38,25 @@ func Handler(ctx *gin.Context, entities []configuration.Entity, proxyHost string
 		req.Header = ctx.Request.Header
 		req.Host = ctx.Request.Host
 		req.URL.Scheme = constants.PROTOCOL_SCHEME
-		req.URL.Host = proxyHost
+		req.URL.Host = r.conf.Server.Proxy
 		req.URL.Path = ctx.Request.URL.Path
+
+		if len(body) > 0 {
+			req.Body = io.NopCloser(bytes.NewBuffer(body))
+		}
 
 	}
 
-	proxy := &httputil.ReverseProxy{Director: director}
+	proxy := &httputil.ReverseProxy{Director: director,
+		Transport: &http.Transport{
+
+			DialContext: (&net.Dialer{
+				Timeout:   r.conf.Server.Timeout,
+				KeepAlive: -1,
+				DualStack: true,
+			}).DialContext,
+			IdleConnTimeout: r.conf.Server.IdleConnectionTimeout,
+		}}
 
 	proxy.ServeHTTP(ctx.Writer, ctx.Request)
 

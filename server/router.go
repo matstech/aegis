@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"os/signal"
 	"syscall"
@@ -38,7 +40,7 @@ func (r *Router) Start() error {
 
 	r.server.Any("/*proxy",
 		func(ctx *gin.Context) {
-			Handler(ctx, r.conf.Entities, r.conf.Server.Proxy)
+			r.Handler(ctx)
 		})
 
 	srv := &http.Server{
@@ -48,9 +50,37 @@ func (r *Router) Start() error {
 
 	go func() {
 
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal().Msgf("error staring server: %s", err.Error())
-			os.Exit(2)
+		if r.conf.Server.Mode == "PLAIN" {
+
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatal().Msgf("error starting server: %s", err.Error())
+				os.Exit(2)
+			}
+
+		} else {
+			//generic TLS policy
+			srv.TLSConfig = &tls.Config{
+				ClientAuth: tls.NoClientCert,
+			}
+
+			if r.conf.Server.Mode == "MTLS" {
+				certPool, certPoolErr := buildCertPool(r.conf.Server.Mtls.Cacert)
+
+				if certPoolErr != nil {
+					log.Fatal().Msgf("error loading certpool: %s", certPoolErr.Error())
+					os.Exit(2)
+				}
+
+				srv.TLSConfig.ClientCAs = certPool
+				srv.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+			}
+
+			if err := srv.ListenAndServeTLS(
+				r.conf.Server.Mtls.Certpath,
+				r.conf.Server.Mtls.Keypath); err != nil && err != http.ErrServerClosed {
+				log.Fatal().Msgf("error starting server: %s", err.Error())
+				os.Exit(2)
+			}
 		}
 	}()
 
@@ -85,4 +115,24 @@ func errorHandler(c *gin.Context) {
 		return
 	}
 
+}
+
+func buildCertPool(cacertpath string) (*x509.CertPool, error) {
+	certPool, _ := x509.SystemCertPool()
+
+	if certPool == nil {
+		certPool = x509.NewCertPool()
+	}
+
+	if cacertpath != "" {
+		c, err := os.ReadFile(cacertpath)
+
+		if err != nil {
+			return nil, err
+		}
+
+		certPool.AppendCertsFromPEM(c)
+	}
+
+	return certPool, nil
 }

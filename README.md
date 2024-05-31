@@ -1,7 +1,7 @@
-# go-token-guard
+# Aegis
 
 <p align="center">
-  <img src="images/logo.png" alt="Logo" width="160px" height="160px">
+  <img src="images/logo.jpeg" alt="Logo" width="320px" height="320px">
 </p>
 
 ## Summary
