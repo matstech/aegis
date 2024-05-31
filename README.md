@@ -79,17 +79,3 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
 ```bash
 docker run <imagename> -e CONFIG_PATH="<path to folder containing config.json>" -e ACCESSKEY_<KID1>="<secret value>" ... -e ACCESSKEY_<KIDn>="<secret value>" -p 8080:8080
 ```
-
-## Exit code
-
-## Exit Code 1
-
-- **Descrizione**: configurazioni sbagliate.
-- **Causa**: Il programma è terminato correttamente senza errori.
-- **Soluzione**: Nessuna azione necessaria.
-
-## Exit Code 2
-
-- **Descrizione**: errore nello start del server
-- **Causa**: Il programma è terminato correttamente senza errori.
-- **Soluzione**: Nessuna azione necessaria.
