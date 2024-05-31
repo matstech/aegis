@@ -1,7 +1,7 @@
 package security
 
 import (
-	"aegis/constants"
+	"aegis/configuration"
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/base64"
@@ -23,7 +23,7 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 	h := hmac.New(sha512.New, []byte(secret))
 
-	tbv := headers.Get(constants.AUTH_CORRELATIONID)
+	tbv := headers.Get(configuration.AUTH_CORRELATIONID)
 
 	if authHeaders != "" {
 		hs := strings.Split(authHeaders, ";")

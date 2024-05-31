@@ -2,7 +2,6 @@ package server
 
 import (
 	"aegis/configuration"
-	"aegis/constants"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -18,12 +17,12 @@ import (
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
 var authKid = "c0y44e8LL4"
 var headersMap = map[string]string{
-	constants.SIGNATURE:          "XciMlTpNQSefPAjCbHzHU6fF3YorGGOMyP8qMuYKCOc3Z1MD5iSb9dgUyvg6arCRd/Bz4/EfJRO00HXLZLX1Dw==",
-	constants.AUTH_KID:           authKid,
-	constants.AUTH_HEADERS:       "header1;header2",
-	"header1":                    "header1",
-	"header2":                    "header2",
-	constants.AUTH_CORRELATIONID: "1fkEphx2qq",
+	configuration.SIGNATURE:          "XciMlTpNQSefPAjCbHzHU6fF3YorGGOMyP8qMuYKCOc3Z1MD5iSb9dgUyvg6arCRd/Bz4/EfJRO00HXLZLX1Dw==",
+	configuration.AUTH_KID:           authKid,
+	configuration.AUTH_HEADERS:       "header1;header2",
+	"header1":                        "header1",
+	"header2":                        "header2",
+	configuration.AUTH_CORRELATIONID: "1fkEphx2qq",
 }
 
 var kids = []string{"c0y44e8LL4"}
@@ -68,7 +67,7 @@ func TestHandlerKoSignature(t *testing.T) {
 	ctx := buildGinContext(serverUrl)
 
 	for hName, hValue := range headersMap {
-		if hName == constants.SIGNATURE {
+		if hName == configuration.SIGNATURE {
 			ctx.Request.Header.Add(hName, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 		} else {
 			ctx.Request.Header.Add(hName, hValue)
@@ -153,10 +152,10 @@ func mockProxyServer(error bool) (string, *httptest.Server) {
 			w.WriteHeader(http.StatusFailedDependency)
 		}
 
-		if r.Header.Get(constants.SIGNATURE) != "" ||
-			r.Header.Get(constants.AUTH_KID) != "" ||
-			r.Header.Get(constants.AUTH_HEADERS) != "" ||
-			r.Header.Get(constants.AUTH_CORRELATIONID) == "" {
+		if r.Header.Get(configuration.SIGNATURE) != "" ||
+			r.Header.Get(configuration.AUTH_KID) != "" ||
+			r.Header.Get(configuration.AUTH_HEADERS) != "" ||
+			r.Header.Get(configuration.AUTH_CORRELATIONID) == "" {
 			w.WriteHeader(http.StatusNotAcceptable)
 		}
 	}))

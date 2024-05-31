@@ -73,7 +73,7 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
 
 ## How to run
 
-- Build docker image locally or use official docker image: TODO
+- Build docker image locally or use official [docker image](https://hub.docker.com/repository/docker/matteos93/aegis)
 - Run docker image as follows:
 
 ```bash

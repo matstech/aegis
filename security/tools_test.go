@@ -1,7 +1,7 @@
 package security
 
 import (
-	"aegis/constants"
+	"aegis/configuration"
 	"net/http"
 	"os"
 	"strings"
@@ -17,12 +17,12 @@ var authHeaders = "header1;header2"
 var payload = []byte("DuqjbeoyE9LIo77MaATfF0zl3hu2BZ31")
 
 var headersMap = map[string]string{
-	constants.SIGNATURE:          signature,
-	constants.AUTH_KID:           authKid,
-	constants.AUTH_HEADERS:       authHeaders,
-	"header1":                    "header1",
-	"header2":                    "header2",
-	constants.AUTH_CORRELATIONID: "1fkEphx2qq",
+	configuration.SIGNATURE:          signature,
+	configuration.AUTH_KID:           authKid,
+	configuration.AUTH_HEADERS:       authHeaders,
+	"header1":                        "header1",
+	"header2":                        "header2",
+	configuration.AUTH_CORRELATIONID: "1fkEphx2qq",
 }
 
 var entities = []string{authKid}

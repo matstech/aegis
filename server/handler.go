@@ -1,7 +1,7 @@
 package server
 
 import (
-	"aegis/constants"
+	"aegis/configuration"
 	"aegis/security"
 	"bytes"
 	"io"
@@ -31,13 +31,13 @@ func (r *Router) Handler(ctx *gin.Context) {
 
 	director := func(req *http.Request) {
 
-		ctx.Request.Header.Del(constants.AUTH_KID)
-		ctx.Request.Header.Del(constants.AUTH_HEADERS)
-		ctx.Request.Header.Del(constants.SIGNATURE)
+		ctx.Request.Header.Del(configuration.AUTH_KID)
+		ctx.Request.Header.Del(configuration.AUTH_HEADERS)
+		ctx.Request.Header.Del(configuration.SIGNATURE)
 
 		req.Header = ctx.Request.Header
 		req.Host = ctx.Request.Host
-		req.URL.Scheme = constants.PROTOCOL_SCHEME
+		req.URL.Scheme = configuration.PROTOCOL_SCHEME
 		req.URL.Host = r.conf.Server.Upstream
 		req.URL.Path = ctx.Request.URL.Path
 
@@ -66,25 +66,25 @@ func checkHeaders(ctx *gin.Context) (string, string, string) {
 
 	headers := ctx.Request.Header
 
-	authCorrelationId := headers.Get(constants.AUTH_CORRELATIONID)
+	authCorrelationId := headers.Get(configuration.AUTH_CORRELATIONID)
 
 	if authCorrelationId == "" {
-		ParamMissingError(ctx, constants.AUTH_CORRELATIONID)
+		ParamMissingError(ctx, configuration.AUTH_CORRELATIONID)
 	}
 
-	authKid := headers.Get(constants.AUTH_KID)
+	authKid := headers.Get(configuration.AUTH_KID)
 
 	if authKid == "" {
-		ParamMissingError(ctx, constants.AUTH_KID)
+		ParamMissingError(ctx, configuration.AUTH_KID)
 	}
 
-	signature := headers.Get(constants.SIGNATURE)
+	signature := headers.Get(configuration.SIGNATURE)
 
 	if signature == "" {
-		ParamMissingError(ctx, constants.SIGNATURE)
+		ParamMissingError(ctx, configuration.SIGNATURE)
 	}
 
 	return authKid,
-		headers.Get(constants.AUTH_HEADERS),
+		headers.Get(configuration.AUTH_HEADERS),
 		signature
 }
