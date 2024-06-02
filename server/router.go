@@ -21,6 +21,7 @@ import (
 type Router struct {
 	conf   *configuration.MainConfiguration
 	server *gin.Engine
+	ready  bool
 }
 
 func NewRouter(cfg *configuration.MainConfiguration) *Router {
@@ -36,17 +37,30 @@ func (r *Router) Start() error {
 
 	r.server.Use(errorHandler)
 
-	// probes port
-	// probesSrv := &http.Server{
-	// 	Addr: fmt.Sprintf(":%d", r.conf.Server.ProbesPort),
-	// }
+	// probes server engine
 
-	// r.server.GET("/liveness", func(ctx *gin.Context) {
-	// 	ctx.Status(http.StatusOK)
-	// })
-	// r.server.GET("/readiness", func(ctx *gin.Context) {
-	// 	ctx.Status(http.StatusOK)
-	// })
+	probeEngine := gin.New()
+
+	probeEngine.Use(
+		gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: []string{"/readiness", "/liveness"}}),
+		gin.Recovery())
+
+	probeEngine.GET("/liveness", func(ctx *gin.Context) {
+		ctx.Status(http.StatusOK)
+	})
+
+	probeEngine.GET("/readiness", func(ctx *gin.Context) {
+		if r.ready {
+			ctx.Status(http.StatusOK)
+		} else {
+			ctx.Status(http.StatusServiceUnavailable)
+		}
+	})
+
+	go func() {
+		log.Info().Msgf("Starting probes router")
+		probeEngine.Run(fmt.Sprintf(":%d", r.conf.Server.ProbesPort))
+	}()
 
 	r.server.Any("/*proxy",
 		func(ctx *gin.Context) {
@@ -60,10 +74,13 @@ func (r *Router) Start() error {
 
 	go func() {
 
+		r.ready = true
+
 		if r.conf.Server.Mode == "PLAIN" {
 
 			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Fatal().Msgf("error starting server: %s", err.Error())
+				r.ready = false
 				os.Exit(2)
 			}
 
@@ -89,9 +106,12 @@ func (r *Router) Start() error {
 				r.conf.Server.Tls.Certpath,
 				r.conf.Server.Tls.Keypath); err != nil && err != http.ErrServerClosed {
 				log.Fatal().Msgf("error starting server: %s", err.Error())
+				r.ready = false
 				os.Exit(2)
 			}
+
 		}
+
 	}()
 
 	quit := make(chan os.Signal, 1)
@@ -105,11 +125,14 @@ func (r *Router) Start() error {
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
+		r.ready = false
 		log.Fatal().Msgf("Server is being forcefully shut down: %s", err.Error())
 		os.Exit(2)
 	}
 
 	<-ctx.Done()
+
+	r.ready = false
 
 	log.Warn().Msgf("Server exiting")
 

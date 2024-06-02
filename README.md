@@ -61,6 +61,7 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
             "cacert": "test/cacert.pem" # file path of CAs for certificate verification (MTLS)
         },
         "port": 8080, # proxy listen port
+        "probesport": 2112, # server port for probes endpoint (Kubernetes feat)
         "upstream": "httpbin.org" # upstream host
     },
     "kids": [ # list of strings representing all registered key id
@@ -78,6 +79,64 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
 
 ```bash
 docker run <imagename> -e CONFIG_PATH="<path to folder containing config.json>" -e ACCESSKEY_<KID1>="<secret value>" ... -e ACCESSKEY_<KIDn>="<secret value>" -p 8080:8080
+```
+
+## Example
+
+This is an example of POST request to target server containing Authentication headers:
+
+```bash
+curl --location --request POST 'http://localhost:8080/post' \
+--header 'Auth-CorrelationId: jxW7faeiNP' \
+--header 'Auth-Kid: test' \
+--header 'Signature: sM4EOA3jh/F7X3PqKI52Cr3Sa9kvS9YwkSSqFKGy3hExBrfPKoro3w3eJSq26Yw7I7ydesiXgcjxkMGLMVfiNQ==' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "min_position": 5,
+    "has_more_items": false,
+    "items_html": "Bus",
+    "new_latent_count": 8,
+    "data": {
+        "length": 25,
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+    },
+    "numericalArray": [
+        29,
+        32,
+        33,
+        33,
+        28
+    ],
+    "StringArray": [
+        "Oxygen",
+        "Oxygen",
+        "Oxygen",
+        "Oxygen"
+    ],
+    "multipleTypesArray": true,
+    "objArray": [
+        {
+            "class": "lower",
+            "age": 0
+        },
+        {
+            "class": "upper",
+            "age": 9
+        },
+        {
+            "class": "middle",
+            "age": 0
+        },
+        {
+            "class": "lower",
+            "age": 2
+        },
+        {
+            "class": "lower",
+            "age": 5
+        }
+    ]
+}'
 ```
 
 ## Helm
