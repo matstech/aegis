@@ -15,6 +15,7 @@ type Server struct {
 		Certpath, Keypath, Cacert string
 	}
 	Port                  int `default:"8080"`
+	ProbesPort            int `default:"2112"`
 	Upstream              string
 	Timeout               time.Duration `default:"0"`
 	IdleConnectionTimeout time.Duration `default:"0"`

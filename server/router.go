@@ -36,6 +36,18 @@ func (r *Router) Start() error {
 
 	r.server.Use(errorHandler)
 
+	// probes port
+	// probesSrv := &http.Server{
+	// 	Addr: fmt.Sprintf(":%d", r.conf.Server.ProbesPort),
+	// }
+
+	// r.server.GET("/liveness", func(ctx *gin.Context) {
+	// 	ctx.Status(http.StatusOK)
+	// })
+	// r.server.GET("/readiness", func(ctx *gin.Context) {
+	// 	ctx.Status(http.StatusOK)
+	// })
+
 	r.server.Any("/*proxy",
 		func(ctx *gin.Context) {
 			r.Handler(ctx)

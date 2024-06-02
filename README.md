@@ -79,3 +79,7 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
 ```bash
 docker run <imagename> -e CONFIG_PATH="<path to folder containing config.json>" -e ACCESSKEY_<KID1>="<secret value>" ... -e ACCESSKEY_<KIDn>="<secret value>" -p 8080:8080
 ```
+
+## Helm
+
+Aegis has an official Helm Chart distribution which is available here and documented in this repository ([helm docs](aegis/README.md)).
