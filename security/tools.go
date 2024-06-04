@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"github.com/shivakar/xxhash"
 )
 
@@ -18,6 +19,7 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 	secret := getKidSecret(authKid, entities)
 
 	if secret == "" {
+		log.Warn().Msgf("No accesskey available for kid %s", authKid)
 		return false
 	}
 
@@ -40,6 +42,8 @@ func VerifySignature(signature, authKid, authHeaders string, payload []byte, hea
 
 		tbv += fmt.Sprintf(":%s", h.String())
 	}
+
+	log.Debug().Msgf("Sign to verify: %s", tbv)
 
 	h.Write([]byte(tbv))
 

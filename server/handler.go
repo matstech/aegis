@@ -10,6 +10,7 @@ import (
 	"net/http/httputil"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func (r *Router) Handler(ctx *gin.Context) {
@@ -65,6 +66,8 @@ func (r *Router) Handler(ctx *gin.Context) {
 func checkHeaders(ctx *gin.Context) (string, string, string) {
 
 	headers := ctx.Request.Header
+
+	log.Debug().Msgf("Request headers: %s", headers)
 
 	authCorrelationId := headers.Get(configuration.AUTH_CORRELATIONID)
 
