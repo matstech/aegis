@@ -36,9 +36,9 @@ func TestBuildUpstreamHeadersAppliesDropAndInjectWithoutMutatingSource(t *testin
 	cfg := &configuration.MainConfiguration{
 		Server: configuration.Server{
 			DropHeaders: []string{"Authorization", "X-Drop-Me"},
-			InjectHeaders: map[string]configuration.HeaderValueSource{
-				"Authorization": {Value: "Bearer upstream-token"},
-				"X-Aegis-Proxy": {Value: "true"},
+			InjectHeaders: []configuration.InjectHeader{
+				{Name: "Authorization", Value: "Bearer upstream-token"},
+				{Name: "X-Aegis-Proxy", Value: "true"},
 			},
 		},
 	}
@@ -78,8 +78,8 @@ func TestBuildUpstreamHeadersAppliesEnvBackedInjectedHeaders(t *testing.T) {
 
 	cfg := &configuration.MainConfiguration{
 		Server: configuration.Server{
-			InjectHeaders: map[string]configuration.HeaderValueSource{
-				"Authorization": {ValueFromEnv: "UPSTREAM_AUTHORIZATION"},
+			InjectHeaders: []configuration.InjectHeader{
+				{Name: "Authorization", ValueFromEnv: "UPSTREAM_AUTHORIZATION"},
 			},
 		},
 	}
