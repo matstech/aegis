@@ -89,6 +89,9 @@ secret:
   akeys:
     # -- name of the secret storing all the accesskey associated to configured kids
     name: test-secret
+  injectHeaders:
+    # -- optional secret name exposing env vars referenced by config.server.injectHeaders.*.valueFromEnv
+    name: ""
 
 # -- aegis main configuration describe in the main doc
 config:
@@ -107,6 +110,12 @@ config:
         "port": 8080,
         "probesport": 2112,
         "upstream": "httpbin.org",
+        "dropHeaders": ["Authorization"],
+        "injectHeaders":
+          {
+            "X-Aegis-Proxy": { "value": "true" },
+            "Authorization": { "valueFromEnv": "UPSTREAM_AUTHORIZATION" },
+          },
       },
     "kids": ["test"],
   }

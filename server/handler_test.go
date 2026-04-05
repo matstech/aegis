@@ -33,11 +33,13 @@ func TestHandlerOk(t *testing.T) {
 
 	defer server.Close()
 
-	router := NewRouter(&configuration.MainConfiguration{
+	cfg := &configuration.MainConfiguration{
 		Kids: kids,
 		Server: configuration.Server{
 			Upstream: hostAndPort(serverUrl),
-		}})
+		}}
+	assert.NoError(t, cfg.Validate())
+	router := NewRouter(cfg)
 
 	ctx := buildGinContext(serverUrl)
 
@@ -58,11 +60,13 @@ func TestHandlerKoSignature(t *testing.T) {
 
 	defer server.Close()
 
-	router := NewRouter(&configuration.MainConfiguration{
+	cfg := &configuration.MainConfiguration{
 		Kids: kids,
 		Server: configuration.Server{
 			Upstream: hostAndPort(serverUrl),
-		}})
+		}}
+	assert.NoError(t, cfg.Validate())
+	router := NewRouter(cfg)
 
 	ctx := buildGinContext(serverUrl)
 
@@ -86,11 +90,13 @@ func TestHandlerKoFromServer(t *testing.T) {
 
 	defer server.Close()
 
-	router := NewRouter(&configuration.MainConfiguration{
+	cfg := &configuration.MainConfiguration{
 		Kids: kids,
 		Server: configuration.Server{
 			Upstream: hostAndPort(serverUrl),
-		}})
+		}}
+	assert.NoError(t, cfg.Validate())
+	router := NewRouter(cfg)
 
 	ctx := buildGinContext(serverUrl)
 
@@ -113,11 +119,13 @@ func TestHandlerNoHeaders(t *testing.T) {
 
 	ctx := buildGinContext(serverUrl)
 
-	router := NewRouter(&configuration.MainConfiguration{
+	cfg := &configuration.MainConfiguration{
 		Kids: kids,
 		Server: configuration.Server{
 			Upstream: hostAndPort(serverUrl),
-		}})
+		}}
+	assert.NoError(t, cfg.Validate())
+	router := NewRouter(cfg)
 	router.Handler(ctx)
 
 	assert.Equal(t, http.StatusBadRequest, ctx.Writer.Status())

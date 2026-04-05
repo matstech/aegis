@@ -13,7 +13,7 @@ A Helm chart for Kubernetes
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| config | object | `{"ginmode":"debug","kids":["test"],"loglevel":"debug","server":{"mode":"PLAIN","port":8080,"tls":{"cacert":"test/cacert.pem","certpath":"test/server.crt","keypath":"test/server.key"},"upstream":"httpbin.org"}}` | aegis main configuration describe in the main doc |
+| config | object | `{"ginmode":"debug","kids":["test"],"loglevel":"debug","server":{"dropHeaders":["Authorization"],"injectHeaders":{"Authorization":{"valueFromEnv":"UPSTREAM_AUTHORIZATION"},"X-Aegis-Proxy":{"value":"true"}},"mode":"PLAIN","port":8080,"tls":{"cacert":"test/cacert.pem","certpath":"test/server.crt","keypath":"test/server.key"},"upstream":"httpbin.org"}}` | aegis main configuration describe in the main doc |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"matteos93/aegis"` |  |
@@ -33,6 +33,7 @@ A Helm chart for Kubernetes
 | replicaCount | int | `1` |  |
 | resources | object | `{"limits":{"cpu":"500m","memory":"256Mi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Kube container resources |
 | secret.akeys.name | string | `"<SECRET_NAME>"` | name of the secret storing all the accesskey associated to configured kids |
+| secret.injectHeaders.name | string | `""` | optional secret name exposing env vars referenced by config.server.injectHeaders.*.valueFromEnv |
 | securityContext | object | `{}` |  |
 | service.port | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |

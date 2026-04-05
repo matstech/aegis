@@ -9,7 +9,18 @@
             "cacert": "test/cacert.pem"
         },
         "port": 8080,
-        "upstream": "httpbin.org"
+        "upstream": "httpbin.org",
+        "dropHeaders": [
+            "Authorization"
+        ],
+        "injectHeaders": {
+            "X-Aegis-Proxy": {
+                "value": "true"
+            },
+            "Authorization": {
+                "valueFromEnv": "UPSTREAM_AUTHORIZATION"
+            }
+        }
     },
     "kids": [
         "test"

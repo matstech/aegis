@@ -44,6 +44,11 @@ func main() {
 
 	log.Info().Msgf("Configuration loaded: %v", cfg)
 
+	if err := cfg.Validate(); err != nil {
+		log.Fatal().Msgf("Invalid configuration: %s", err.Error())
+		os.Exit(1)
+	}
+
 	router := server.NewRouter(&cfg)
 
 	router.Start()
