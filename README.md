@@ -1,5 +1,10 @@
 # Aegis
 
+[![Release](https://img.shields.io/github/v/release/matstech/aegis?sort=semver)](https://github.com/matstech/aegis/releases)
+[![Release Workflow](https://img.shields.io/github/actions/workflow/status/matstech/aegis/release.yml?label=release)](https://github.com/matstech/aegis/actions/workflows/release.yml)
+[![Docker Image](https://img.shields.io/docker/v/matteos93/aegis?sort=semver&label=docker)](https://hub.docker.com/r/matteos93/aegis)
+[![License](https://img.shields.io/github/license/matstech/aegis)](https://github.com/matstech/aegis/blob/main/LICENSE)
+
 <p align="center">
   <img src="images/logo.jpeg" alt="Logo" width="320px" height="320px">
 </p>
