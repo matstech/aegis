@@ -31,12 +31,7 @@ func (r *Router) Handler(ctx *gin.Context) {
 	}
 
 	director := func(req *http.Request) {
-
-		ctx.Request.Header.Del(configuration.AUTH_KID)
-		ctx.Request.Header.Del(configuration.AUTH_HEADERS)
-		ctx.Request.Header.Del(configuration.SIGNATURE)
-
-		req.Header = ctx.Request.Header
+		req.Header = r.buildUpstreamHeaders(ctx.Request.Header)
 		req.Host = ctx.Request.Host
 		req.URL.Scheme = configuration.PROTOCOL_SCHEME
 		req.URL.Host = r.conf.Server.Upstream
@@ -61,6 +56,24 @@ func (r *Router) Handler(ctx *gin.Context) {
 
 	proxy.ServeHTTP(ctx.Writer, ctx.Request)
 
+}
+
+func (r *Router) buildUpstreamHeaders(headers http.Header) http.Header {
+	upstreamHeaders := headers.Clone()
+
+	upstreamHeaders.Del(configuration.AUTH_KID)
+	upstreamHeaders.Del(configuration.AUTH_HEADERS)
+	upstreamHeaders.Del(configuration.SIGNATURE)
+
+	for _, headerName := range r.conf.Server.DropHeaders {
+		upstreamHeaders.Del(headerName)
+	}
+
+	for headerName, headerValue := range r.conf.Server.ResolvedInjectHeaders() {
+		upstreamHeaders.Set(headerName, headerValue)
+	}
+
+	return upstreamHeaders
 }
 
 func checkHeaders(ctx *gin.Context) (string, string, string) {

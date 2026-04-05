@@ -60,6 +60,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.secret.akeys.name }}
+            {{- if .Values.secret.injectHeaders.name }}
+            - secretRef:
+                name: {{ .Values.secret.injectHeaders.name }}
+            {{- end }}
       volumes:
         - name: config-vol
           configMap:
