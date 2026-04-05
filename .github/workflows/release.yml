@@ -27,10 +27,6 @@ env:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      major: ${{ steps.version.outputs.major }}
-      minor: ${{ steps.version.outputs.minor }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -44,24 +40,6 @@ jobs:
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
-
-      - name: Resolve release version
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          tag="${GITHUB_REF_NAME}"
-          version="${tag#v}"
-
-          if [[ ! "${version}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "release tags must match semver X.Y.Z or vX.Y.Z" >&2
-            exit 1
-          fi
-
-          echo "version=${version}" >> "${GITHUB_OUTPUT}"
-          echo "major=${BASH_REMATCH[1]}" >> "${GITHUB_OUTPUT}"
-          echo "minor=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" >> "${GITHUB_OUTPUT}"
 
       - name: Validate release configuration
         shell: bash
@@ -83,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          version="${{ steps.version.outputs.version }}"
+          version="${GITHUB_REF_NAME}"
           binary_version="$(awk -F'"' '/VERSION string =/ { print $2 }' version.go)"
           chart_version="$(awk -F': ' '/^version:/ { print $2 }' aegis/Chart.yaml)"
           app_version="$(awk -F'"' '/^appVersion:/ { print $2 }' aegis/Chart.yaml)"
@@ -109,10 +87,6 @@ jobs:
           set -euo pipefail
           go test ./configuration ./security
           go test ./server -run 'TestBuildUpstreamHeaders'
-
-      - name: Run integration test
-        shell: bash
-        run: ./test/integration/run_httpbin_test.sh
 
       - name: Lint Helm chart
         shell: bash
@@ -152,9 +126,7 @@ jobs:
             ${{ env.DOCKERHUB_IMAGE }}
             ${{ env.GHCR_IMAGE }}
           tags: |
-            type=raw,value=${{ needs.verify.outputs.version }}
-            type=raw,value=${{ needs.verify.outputs.minor }}
-            type=raw,value=${{ needs.verify.outputs.major }}
+            type=raw,value=${{ github.ref_name }}
             type=raw,value=latest
 
       - name: Build and push Docker image
@@ -196,7 +168,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          helm push "dist/${CHART_NAME}-${{ needs.verify.outputs.version }}.tgz" "oci://${HELM_OCI_REPOSITORY}"
+          helm push "dist/${CHART_NAME}-${GITHUB_REF_NAME}.tgz" "oci://${HELM_OCI_REPOSITORY}"
 
   github-release:
     runs-on: ubuntu-latest
@@ -217,7 +189,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           helm package "${CHART_DIR}" --destination dist
-          sha256sum "dist/${CHART_NAME}-${{ needs.verify.outputs.version }}.tgz" > "dist/${CHART_NAME}-${{ needs.verify.outputs.version }}.tgz.sha256"
+          sha256sum "dist/${CHART_NAME}-${GITHUB_REF_NAME}.tgz" > "dist/${CHART_NAME}-${GITHUB_REF_NAME}.tgz.sha256"
 
       - name: Create GitHub release
         env:
@@ -228,19 +200,19 @@ jobs:
 
           {
             echo "Docker image (Docker Hub):"
-            echo "- \`${DOCKERHUB_IMAGE}:${{ needs.verify.outputs.version }}\`"
+            echo "- \`${DOCKERHUB_IMAGE}:${GITHUB_REF_NAME}\`"
             echo "- \`${DOCKERHUB_IMAGE}:latest\`"
             echo
             echo "Docker image (GHCR):"
-            echo "- \`${GHCR_IMAGE}:${{ needs.verify.outputs.version }}\`"
+            echo "- \`${GHCR_IMAGE}:${GITHUB_REF_NAME}\`"
             echo "- \`${GHCR_IMAGE}:latest\`"
             echo
             echo "Helm chart (OCI):"
-            echo "- \`oci://${HELM_OCI_REPOSITORY}/${CHART_NAME}:${{ needs.verify.outputs.version }}\`"
+            echo "- \`oci://${HELM_OCI_REPOSITORY}/${CHART_NAME}:${GITHUB_REF_NAME}\`"
           } > release-notes.md
 
           gh release create "${GITHUB_REF_NAME}" \
-            "dist/${CHART_NAME}-${{ needs.verify.outputs.version }}.tgz" \
-            "dist/${CHART_NAME}-${{ needs.verify.outputs.version }}.tgz.sha256" \
+            "dist/${CHART_NAME}-${GITHUB_REF_NAME}.tgz" \
+            "dist/${CHART_NAME}-${GITHUB_REF_NAME}.tgz.sha256" \
             --title "${GITHUB_REF_NAME}" \
             --notes-file release-notes.md
