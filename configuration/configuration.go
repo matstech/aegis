@@ -3,56 +3,65 @@ package configuration
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
 type MainConfiguration struct {
-	Ginmode  string `default:"debug" usage:"release in production"`
-	Loglevel string
-	Server   Server `required:"true"`
-	Kids     []string
+	Ginmode  string   `json:"ginmode" default:"debug" usage:"release in production"`
+	Loglevel string   `json:"loglevel"`
+	Server   Server   `json:"server" required:"true"`
+	Kids     []string `json:"kids"`
 }
 
 func (c *MainConfiguration) Validate() error {
 	return c.Server.Validate()
 }
 
-type HeaderValueSource struct {
-	Value        string
-	ValueFromEnv string
+type InjectHeader struct {
+	Name string `json:"name"`
+
+	Value        string `json:"value"`
+	ValueFromEnv string `json:"valueFromEnv"`
 }
 
-func (h HeaderValueSource) Resolve(headerName string) (string, error) {
+func (h InjectHeader) Resolve() (string, string, error) {
+	if strings.TrimSpace(h.Name) == "" {
+		return "", "", fmt.Errorf("injectHeaders entry name must be configured")
+	}
+
 	hasValue := h.Value != ""
 	hasValueFromEnv := h.ValueFromEnv != ""
 
 	switch {
 	case hasValue == hasValueFromEnv:
-		return "", fmt.Errorf("exactly one of value or valueFromEnv must be configured for header %s", headerName)
+		return "", "", fmt.Errorf("exactly one of value or valueFromEnv must be configured for header %s", h.Name)
 	case hasValue:
-		return h.Value, nil
+		return h.Name, h.Value, nil
 	default:
 		value, found := os.LookupEnv(h.ValueFromEnv)
 		if !found {
-			return "", fmt.Errorf("environment variable %q not found", h.ValueFromEnv)
+			return "", "", fmt.Errorf("environment variable %q not found", h.ValueFromEnv)
 		}
 
-		return value, nil
+		return h.Name, value, nil
 	}
 }
 
 type Server struct {
-	Mode string `default:"PLAIN" usage:"PLAIN,TLS,MTLS"`
+	Mode string `json:"mode" default:"PLAIN" usage:"PLAIN,TLS,MTLS"`
 	Tls  struct {
-		Certpath, Keypath, Cacert string
-	}
-	Port                  int `default:"8080"`
-	ProbesPort            int `default:"2112"`
-	Upstream              string
-	DropHeaders           []string
-	InjectHeaders         map[string]HeaderValueSource
-	Timeout               time.Duration `default:"0"`
-	IdleConnectionTimeout time.Duration `default:"0"`
+		Certpath string `json:"certpath"`
+		Keypath  string `json:"keypath"`
+		Cacert   string `json:"cacert"`
+	} `json:"tls"`
+	Port                  int            `json:"port" default:"8080"`
+	ProbesPort            int            `json:"probesport" default:"2112"`
+	Upstream              string         `json:"upstream"`
+	DropHeaders           []string       `json:"dropHeaders"`
+	InjectHeaders         []InjectHeader `json:"injectHeaders"`
+	Timeout               time.Duration  `json:"timeout" default:"0"`
+	IdleConnectionTimeout time.Duration  `json:"idleConnectionTimeout" default:"0"`
 	resolvedInjectHeaders map[string]string
 }
 
@@ -70,13 +79,18 @@ func (s *Server) Validate() error {
 func (s Server) ResolveInjectHeaders() (map[string]string, error) {
 	resolved := make(map[string]string, len(s.InjectHeaders))
 
-	for headerName, headerValueSource := range s.InjectHeaders {
-		value, err := headerValueSource.Resolve(headerName)
+	for _, injectHeader := range s.InjectHeaders {
+		headerName, value, err := injectHeader.Resolve()
 		if err != nil {
-			return nil, fmt.Errorf("invalid injectHeaders entry for %q: %w", headerName, err)
+			return nil, err
 		}
 
-		resolved[headerName] = value
+		normalizedHeaderName := httpHeaderKey(headerName)
+		if _, found := resolved[normalizedHeaderName]; found {
+			return nil, fmt.Errorf("duplicate injectHeaders entry for header %s", headerName)
+		}
+
+		resolved[normalizedHeaderName] = value
 	}
 
 	return resolved, nil
@@ -90,4 +104,8 @@ func (s Server) ResolvedInjectHeaders() map[string]string {
 	}
 
 	return resolved
+}
+
+func httpHeaderKey(headerName string) string {
+	return strings.TrimSpace(strings.ToLower(headerName))
 }

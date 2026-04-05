@@ -64,14 +64,16 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
         "probesport": 2112, # server port for probes endpoint (Kubernetes feat)
         "upstream": "httpbin.org", # upstream host
         "dropHeaders": ["Authorization"], # optional list of incoming headers to remove before forwarding upstream
-        "injectHeaders": { # optional map of headers always added/overridden before forwarding upstream
-            "X-Aegis-Proxy": {
+        "injectHeaders": [ # optional list of headers always added/overridden before forwarding upstream
+            {
+                "name": "X-Aegis-Proxy",
                 "value": "true"
             },
-            "Authorization": {
+            {
+                "name": "Authorization",
                 "valueFromEnv": "UPSTREAM_AUTHORIZATION"
             }
-        }
+        ]
     },
     "kids": [ # list of strings representing all registered key id
         "test"
@@ -81,7 +83,7 @@ Configuration is based on [aconfig](https://github.com/cristalhq/aconfig) Go mod
 
 > 👉 `dropHeaders` acts on request headers received by aegis before forwarding. `injectHeaders` is applied afterwards, so configured injected headers can override incoming values with the same name.
 
-> 👉 Each `injectHeaders` entry must explicitly define either `value` or `valueFromEnv`. This makes the config shape unambiguous and allows sensitive upstream header values to stay in environment variables, typically populated from Kubernetes Secrets.
+> 👉 Each `injectHeaders` entry must explicitly define `name` and exactly one of `value` or `valueFromEnv`. This makes the config shape unambiguous and allows sensitive upstream header values to stay in environment variables, typically populated from Kubernetes Secrets.
 
 > 👉 Each kid MUST be associated to its value stored in specific env which has to be of the form *ACCESSKEY_<UpperCase(kid)>*. For example: if the kid is "test", the associated env will be *ACCESSKEY_TEST="abcde1242352525gsgs"*
 

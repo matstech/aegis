@@ -13,14 +13,16 @@
         "dropHeaders": [
             "Authorization"
         ],
-        "injectHeaders": {
-            "X-Aegis-Proxy": {
+        "injectHeaders": [
+            {
+                "name": "X-Aegis-Proxy",
                 "value": "true"
             },
-            "Authorization": {
+            {
+                "name": "Authorization",
                 "valueFromEnv": "UPSTREAM_AUTHORIZATION"
             }
-        }
+        ]
     },
     "kids": [
         "test"

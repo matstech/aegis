@@ -13,7 +13,7 @@ A Helm chart for Kubernetes
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| config | object | `{"ginmode":"debug","kids":["test"],"loglevel":"debug","server":{"dropHeaders":["Authorization"],"injectHeaders":{"Authorization":{"valueFromEnv":"UPSTREAM_AUTHORIZATION"},"X-Aegis-Proxy":{"value":"true"}},"mode":"PLAIN","port":8080,"tls":{"cacert":"test/cacert.pem","certpath":"test/server.crt","keypath":"test/server.key"},"upstream":"httpbin.org"}}` | aegis main configuration describe in the main doc |
+| config | object | `{"ginmode":"debug","kids":["test"],"loglevel":"debug","server":{"dropHeaders":["Authorization"],"injectHeaders":[{"name":"X-Aegis-Proxy","value":"true"},{"name":"Authorization","valueFromEnv":"UPSTREAM_AUTHORIZATION"}],"mode":"PLAIN","port":8080,"tls":{"cacert":"test/cacert.pem","certpath":"test/server.crt","keypath":"test/server.key"},"upstream":"httpbin.org"}}` | aegis main configuration describe in the main doc |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"matteos93/aegis"` |  |

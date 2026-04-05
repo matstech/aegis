@@ -8,42 +8,51 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHeaderValueSourceResolveInline(t *testing.T) {
+func TestInjectHeaderResolveInline(t *testing.T) {
 	t.Setenv("UPSTREAM_TOKEN", "from-env")
 
-	value, err := (HeaderValueSource{Value: "inline"}).Resolve("X-Test")
+	headerName, value, err := (InjectHeader{Name: "X-Test", Value: "inline"}).Resolve()
 
 	require.NoError(t, err)
+	assert.Equal(t, "X-Test", headerName)
 	assert.Equal(t, "inline", value)
 }
 
-func TestHeaderValueSourceResolveFromEnv(t *testing.T) {
+func TestInjectHeaderResolveFromEnv(t *testing.T) {
 	t.Setenv("UPSTREAM_TOKEN", "from-env")
 
-	value, err := (HeaderValueSource{ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve("Authorization")
+	headerName, value, err := (InjectHeader{Name: "Authorization", ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve()
 
 	require.NoError(t, err)
+	assert.Equal(t, "Authorization", headerName)
 	assert.Equal(t, "from-env", value)
 }
 
-func TestHeaderValueSourceResolveRejectsMissingDefinition(t *testing.T) {
-	_, err := (HeaderValueSource{}).Resolve("X-Test")
+func TestInjectHeaderResolveRejectsMissingName(t *testing.T) {
+	_, _, err := (InjectHeader{Value: "inline"}).Resolve()
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "name must be configured")
+}
+
+func TestInjectHeaderResolveRejectsMissingDefinition(t *testing.T) {
+	_, _, err := (InjectHeader{Name: "X-Test"}).Resolve()
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "exactly one of value or valueFromEnv")
 	assert.Contains(t, err.Error(), "X-Test")
 }
 
-func TestHeaderValueSourceResolveRejectsConflictingDefinition(t *testing.T) {
-	_, err := (HeaderValueSource{Value: "inline", ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve("X-Test")
+func TestInjectHeaderResolveRejectsConflictingDefinition(t *testing.T) {
+	_, _, err := (InjectHeader{Name: "X-Test", Value: "inline", ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve()
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "exactly one of value or valueFromEnv")
 	assert.Contains(t, err.Error(), "X-Test")
 }
 
-func TestHeaderValueSourceResolveRejectsMissingEnv(t *testing.T) {
-	_, err := (HeaderValueSource{ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve("Authorization")
+func TestInjectHeaderResolveRejectsMissingEnv(t *testing.T) {
+	_, _, err := (InjectHeader{Name: "Authorization", ValueFromEnv: "UPSTREAM_TOKEN"}).Resolve()
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), `environment variable "UPSTREAM_TOKEN" not found`)
@@ -53,16 +62,16 @@ func TestServerResolveInjectHeaders(t *testing.T) {
 	t.Setenv("UPSTREAM_AUTHORIZATION", "Bearer secret")
 
 	resolved, err := (Server{
-		InjectHeaders: map[string]HeaderValueSource{
-			"X-Aegis-Proxy": {Value: "true"},
-			"Authorization": {ValueFromEnv: "UPSTREAM_AUTHORIZATION"},
+		InjectHeaders: []InjectHeader{
+			{Name: "X-Aegis-Proxy", Value: "true"},
+			{Name: "Authorization", ValueFromEnv: "UPSTREAM_AUTHORIZATION"},
 		},
 	}).ResolveInjectHeaders()
 
 	require.NoError(t, err)
 	assert.Equal(t, map[string]string{
-		"X-Aegis-Proxy": "true",
-		"Authorization": "Bearer secret",
+		"authorization": "Bearer secret",
+		"x-aegis-proxy": "true",
 	}, resolved)
 }
 
@@ -76,14 +85,16 @@ func TestConfigurationLoadAcceptsExplicitInjectHeadersShape(t *testing.T) {
 			"mode": "PLAIN",
 			"port": 8080,
 			"upstream": "httpbin.org",
-			"injectHeaders": {
-				"X-Aegis-Proxy": {
+			"injectHeaders": [
+				{
+					"name": "X-Aegis-Proxy",
 					"value": "true"
 				},
-				"Authorization": {
+				{
+					"name": "Authorization",
 					"valueFromEnv": "UPSTREAM_AUTHORIZATION"
 				}
-			}
+			]
 		},
 		"kids": ["test"]
 	}`))
@@ -91,8 +102,8 @@ func TestConfigurationLoadAcceptsExplicitInjectHeadersShape(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, cfg.Validate())
 	assert.Equal(t, map[string]string{
-		"X-Aegis-Proxy": "true",
-		"Authorization": "Bearer secret",
+		"authorization": "Bearer secret",
+		"x-aegis-proxy": "true",
 	}, cfg.Server.ResolvedInjectHeaders())
 }
 
@@ -104,15 +115,25 @@ func TestConfigurationLoadRejectsLegacyInjectHeadersStringShorthand(t *testing.T
 			"mode": "PLAIN",
 			"port": 8080,
 			"upstream": "httpbin.org",
-			"injectHeaders": {
-				"X-Aegis-Proxy": "true"
-			}
+			"injectHeaders": ["X-Aegis-Proxy"]
 		},
 		"kids": ["test"]
 	}`))
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot unmarshal string")
+}
+
+func TestServerResolveInjectHeadersRejectsDuplicateNames(t *testing.T) {
+	_, err := (Server{
+		InjectHeaders: []InjectHeader{
+			{Name: "Authorization", Value: "one"},
+			{Name: "authorization", Value: "two"},
+		},
+	}).ResolveInjectHeaders()
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "duplicate injectHeaders entry")
 }
 
 func unmarshalConfigurationJSON(raw []byte) (*MainConfiguration, error) {

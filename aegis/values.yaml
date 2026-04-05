@@ -112,10 +112,13 @@ config:
         "upstream": "httpbin.org",
         "dropHeaders": ["Authorization"],
         "injectHeaders":
-          {
-            "X-Aegis-Proxy": { "value": "true" },
-            "Authorization": { "valueFromEnv": "UPSTREAM_AUTHORIZATION" },
-          },
+          [
+            { "name": "X-Aegis-Proxy", "value": "true" },
+            {
+              "name": "Authorization",
+              "valueFromEnv": "UPSTREAM_AUTHORIZATION",
+            },
+          ],
       },
     "kids": ["test"],
   }
