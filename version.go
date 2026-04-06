@@ -4,7 +4,7 @@
 package main
 
 const (
-	VERSION string = "2.0.0"
+	VERSION string = "2.1.0"
 )
 
 var BUILDDATE = "NOW"
