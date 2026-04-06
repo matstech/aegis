@@ -1,6 +1,6 @@
 # aegis
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.0](https://img.shields.io/badge/AppVersion-2.0.0-informational?style=flat-square)
+![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.0.0](https://img.shields.io/badge/AppVersion-2.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -38,7 +38,7 @@ A Helm chart for Kubernetes
 | secret.injectHeaders.name | string | `""` | optional secret name exposing env vars referenced by config.server.injectHeaders.*.valueFromEnv |
 | securityContext | object | `{}` |  |
 | service.annotations | object | `{}` |  |
-| service.loadBalancerClass | string | `""` | optional, used only if type == `LoadBalancer` |
+| service.loadBalancerClass | string | `""` |  |
 | service.port | int | `8080` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
