@@ -43,6 +43,8 @@ securityContext:
 service:
   type: ClusterIP
   port: 8080
+  loadBalancerClass: "" # only used if type == LoadBalancer
+  annotations: {}
 
 ingress:
   enabled: true
