@@ -37,6 +37,8 @@ A Helm chart for Kubernetes
 | secret.akeys.name | string | `"test-secret"` | name of the secret storing all the accesskey associated to configured kids |
 | secret.injectHeaders.name | string | `""` | optional secret name exposing env vars referenced by config.server.injectHeaders.*.valueFromEnv |
 | securityContext | object | `{}` |  |
+| service.annotations | object | `{}` |  |
+| service.loadBalancerClass | string | `""` | optional, used only if type == `LoadBalancer` |
 | service.port | int | `8080` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
