@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -34,11 +35,23 @@ func (r *Router) Handler(ctx *gin.Context) {
 	}
 
 	director := func(req *http.Request) {
+
+		upstreamScheme := configuration.PROTOCOL_SCHEME
+		upstreamHost := r.conf.Server.Upstream
+		if parsedUpstream, err := url.Parse(r.conf.Server.Upstream); err == nil &&
+			parsedUpstream.Scheme != "" &&
+			parsedUpstream.Host != "" {
+			upstreamScheme = parsedUpstream.Scheme
+			upstreamHost = parsedUpstream.Host
+		}
+
 		req.Header = r.buildUpstreamHeaders(ctx.Request.Header)
-		req.Host = ctx.Request.Host
-		req.URL.Scheme = configuration.PROTOCOL_SCHEME
-		req.URL.Host = r.conf.Server.Upstream
+		req.Host = upstreamHost
+		req.URL.Scheme = upstreamScheme
+		req.URL.Host = upstreamHost
 		req.URL.Path = ctx.Request.URL.Path
+		req.URL.RawPath = ctx.Request.URL.RawPath
+		req.URL.RawQuery = ctx.Request.URL.RawQuery
 
 		if len(body) > 0 {
 			req.Body = io.NopCloser(bytes.NewBuffer(body))
@@ -89,18 +102,21 @@ func checkHeaders(ctx *gin.Context) (string, string, string) {
 
 	if authCorrelationId == "" {
 		ParamMissingError(ctx, configuration.AUTH_CORRELATIONID)
+		return "", "", ""
 	}
 
 	authKid := headers.Get(configuration.AUTH_KID)
 
 	if authKid == "" {
 		ParamMissingError(ctx, configuration.AUTH_KID)
+		return "", "", ""
 	}
 
 	signature := headers.Get(configuration.SIGNATURE)
 
 	if signature == "" {
 		ParamMissingError(ctx, configuration.SIGNATURE)
+		return "", "", ""
 	}
 
 	return authKid,
